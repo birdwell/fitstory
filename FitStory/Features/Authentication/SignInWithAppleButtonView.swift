@@ -2,7 +2,7 @@ import SwiftUI
 import AuthenticationServices
 
 struct SignInWithAppleButtonView: View {
-    @ObservedObject var authManager: AuthManager
+    @EnvironmentObject var authManager: AuthManager
 
     var body: some View {
         SignInWithAppleButton(

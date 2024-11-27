@@ -1,18 +1,33 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject var authManager: AuthManager
+    @State private var showLogoutConfirmation = false
+
     var body: some View {
-        VStack {
-            Text("Adjust your preferences.")
-                .font(.title)
-                .padding()
-            Text("This is the Settings screen.")
+        NavigationView {
+            Form {
+                Section(header: Text("Account")) {
+                    Button(action: {
+                        showLogoutConfirmation = true
+                    }) {
+                        Text("Log Out")
+                            .foregroundColor(.red)
+                    }
+                    .alert("Are you sure you want to log out?", isPresented: $showLogoutConfirmation) {
+                        Button("Log Out", role: .destructive) {
+                            authManager.signOut()
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    }
+                }
+            }
+            .navigationTitle("Settings")
         }
     }
 }
 
-struct SettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        SettingsView()
-    }
+#Preview {
+    SettingsView()
+        .environmentObject(AuthManager())
 }

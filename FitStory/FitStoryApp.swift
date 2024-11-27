@@ -6,11 +6,8 @@ struct FitStoryApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if authManager.isAuthenticated {
-                MainTabView()
-            } else {
-                OnboardingView(authManager: authManager)
-            }
+            RootView()
+                .environmentObject(authManager)
         }
     }
 }

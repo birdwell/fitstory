@@ -1,8 +1,7 @@
 import SwiftUI
-import AuthenticationServices
 
 struct OnboardingView: View {
-    @ObservedObject var authManager: AuthManager
+    @EnvironmentObject var authManager: AuthManager
 
     var body: some View {
         VStack(spacing: 20) {
@@ -17,18 +16,12 @@ struct OnboardingView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
-            SignInWithAppleButtonView(authManager: authManager)
+            SignInWithAppleButtonView()
                 .frame(height: 50)
                 .padding(.horizontal, 40)
 
             Spacer()
         }
         .padding()
-    }
-}
-
-struct OnboardingView_Previews: PreviewProvider {
-    static var previews: some View {
-        OnboardingView(authManager: AuthManager())
     }
 }
