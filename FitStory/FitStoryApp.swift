@@ -1,5 +1,4 @@
 import SwiftUI
-import AuthenticationServices
 
 @main
 struct FitStoryApp: App {
@@ -8,7 +7,7 @@ struct FitStoryApp: App {
     var body: some Scene {
         WindowGroup {
             if authManager.isAuthenticated {
-                MainTabView() // Main app interface
+                MainTabView()
             } else {
                 OnboardingView(authManager: authManager)
             }

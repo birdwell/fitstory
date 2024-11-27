@@ -18,8 +18,8 @@ struct OnboardingView: View {
                 .padding(.horizontal)
 
             SignInWithAppleButtonView(authManager: authManager)
-                .frame(height: 50) // Set button height
-                .padding(.horizontal, 40) // Add padding for width alignment
+                .frame(height: 50)
+                .padding(.horizontal, 40)
 
             Spacer()
         }

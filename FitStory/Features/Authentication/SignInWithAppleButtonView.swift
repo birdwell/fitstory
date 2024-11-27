@@ -8,15 +8,15 @@ struct SignInWithAppleButtonView: View {
         SignInWithAppleButton(
             .signIn,
             onRequest: { request in
-                // Configure request
                 request.requestedScopes = [.fullName, .email]
             },
             onCompletion: { result in
                 switch result {
                 case .success(let authorization):
-                    if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
-                        let userID = appleIDCredential.user
-                        authManager.signIn(with: userID)
+                    if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
+                       let identityToken = appleIDCredential.identityToken,
+                       let tokenString = String(data: identityToken, encoding: .utf8) {
+                        authManager.signIn(with: appleIDCredential.user, identityToken: tokenString)
                     }
                 case .failure(let error):
                     print("Sign in with Apple failed: \(error.localizedDescription)")
@@ -26,8 +26,4 @@ struct SignInWithAppleButtonView: View {
         .signInWithAppleButtonStyle(.black)
         .cornerRadius(10)
     }
-}
-
-#Preview {
-    SignInWithAppleButtonView(authManager: AuthManager())
 }

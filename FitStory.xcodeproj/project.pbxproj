@@ -37,6 +37,13 @@
 			);
 			target = 6026F6F32CF6BFD600B87BA4 /* FitStory */;
 		};
+		6026F77A2CF6CF8F00B87BA4 /* Exceptions for "FitStory" folder in "FitStoryTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Services/KeychainService.swift,
+			);
+			target = 6026F7072CF6BFD700B87BA4 /* FitStoryTests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -44,6 +51,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				6026F71A2CF6BFD700B87BA4 /* Exceptions for "FitStory" folder in "FitStory" target */,
+				6026F77A2CF6CF8F00B87BA4 /* Exceptions for "FitStory" folder in "FitStoryTests" target */,
 			);
 			path = FitStory;
 			sourceTree = "<group>";
