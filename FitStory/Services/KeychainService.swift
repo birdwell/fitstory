@@ -1,13 +1,6 @@
 import Security
 import Foundation
 
-enum KeychainError: Error {
-    case invalidData
-    case saveFailed
-    case readFailed
-    case deleteFailed
-}
-
 class KeychainService {
     static let shared = KeychainService()
 
@@ -20,15 +13,19 @@ class KeychainService {
             kSecClass: kSecClassGenericPassword,
             kSecAttrAccount: key,
             kSecValueData: data,
-            kSecAttrAccessible: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            kSecAttrService as String: "birdwell.FitStory",
+            kSecAttrAccessible: kSecAttrAccessibleAfterFirstUnlock // Adjusted for longer persistence
         ] as CFDictionary
 
-        // Delete existing item before adding new one
+        // Delete existing item before adding a new one
         SecItemDelete(query)
+
         let status = SecItemAdd(query, nil)
         if status != errSecSuccess {
             throw KeychainError.saveFailed
         }
+
+        print("[KeychainService] Successfully saved key: \(key) with long-term accessibility.")
     }
 
     func read(_ key: String) throws -> String? {
@@ -43,17 +40,18 @@ class KeychainService {
         let status = SecItemCopyMatching(query, &result)
 
         if status == errSecItemNotFound {
+            print("[KeychainService] Key not found: \(key)")
             return nil
         } else if status != errSecSuccess {
             throw KeychainError.readFailed
         }
 
-        guard let data = result as? Data,
-              let string = String(data: data, encoding: .utf8) else {
+        if let data = result as? Data, let string = String(data: data, encoding: .utf8) {
+            print("[KeychainService] Successfully read key: \(key)")
+            return string
+        } else {
             throw KeychainError.invalidData
         }
-
-        return string
     }
 
     func delete(_ key: String) throws {
@@ -63,8 +61,19 @@ class KeychainService {
         ] as CFDictionary
 
         let status = SecItemDelete(query)
-        if status != errSecSuccess && status != errSecItemNotFound {
+        if status == errSecItemNotFound {
+            print("[KeychainService] Key not found for deletion: \(key)")
+        } else if status != errSecSuccess {
             throw KeychainError.deleteFailed
+        } else {
+            print("[KeychainService] Successfully deleted key: \(key)")
         }
     }
+}
+
+enum KeychainError: Error {
+    case invalidData
+    case saveFailed
+    case readFailed
+    case deleteFailed
 }

@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct FitStoryApp: App {
@@ -9,5 +10,6 @@ struct FitStoryApp: App {
             RootView()
                 .environmentObject(authManager)
         }
+        .modelContainer(for: [MeasurementModel.self])
     }
 }

@@ -15,17 +15,73 @@ class AuthManager: ObservableObject {
 
     func checkAuthentication() {
         do {
-            if let _ = try keychainService.read(AuthManager.appleUserIdKey) {
-                validateCredentialState()
+            if let userID = try keychainService.read(AuthManager.appleUserIdKey) {
+                validateCredentialState(for: userID)
             } else {
                 isAuthenticated = false
             }
         } catch {
-            print("Error checking authentication: \(error.localizedDescription)")
+            print("Error reading credentials: \(error.localizedDescription)")
             isAuthenticated = false
         }
     }
+    
+    func validateCredentialState(for userID: String) {
+        ASAuthorizationAppleIDProvider().getCredentialState(forUserID: userID) { [weak self] state, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("[AuthManager] Credential State request returned with error: \(error.localizedDescription)")
 
+                    // Handle specific Apple Sign-In error codes
+                    if (error as NSError).code == -7084 {
+                        print("[AuthManager] Ignoring -7084 error during development.")
+                        self?.isAuthenticated = true // Treat as authenticated in development
+                        return
+                    }
+
+                    // Fallback: Treat as not authenticated for other errors
+                    self?.handleRevokedState(for: userID)
+                    return
+                }
+
+                switch state {
+                case .authorized:
+                    print("[AuthManager] Credential state is authorized.")
+                    self?.isAuthenticated = true
+                case .revoked:
+                    print("[AuthManager] Credential state is revoked. Prompting user to reauthenticate.")
+                    self?.handleRevokedState(for: userID)
+                case .notFound:
+                    print("[AuthManager] Credential state not found. Prompting user to reauthenticate.")
+                    self?.handleRevokedState(for: userID)
+                default:
+                    print("[AuthManager] Credential state is unknown: \(state).")
+                    break
+                }
+            }
+        }
+    }
+    
+    private func handleRevokedState(for userID: String) {
+        // Optionally clear Keychain data if you suspect it’s stale
+        do {
+            try keychainService.delete(AuthManager.appleUserIdKey)
+            try keychainService.delete(AuthManager.identityTokenKey)
+            print("[AuthManager] Cleared outdated Keychain data.")
+        } catch {
+            print("[AuthManager] Failed to clear Keychain data: \(error.localizedDescription)")
+        }
+
+        // Update the authentication state
+        isAuthenticated = false
+
+        // Notify the user (optional)
+        DispatchQueue.main.async {
+            // Add code to show a reauthentication prompt
+            print("[AuthManager] User needs to reauthenticate.")
+        }
+    }
+    
     func signIn(with userID: String, identityToken: String) {
         do {
             // Store the Apple User ID and token in Keychain
@@ -46,26 +102,6 @@ class AuthManager: ObservableObject {
             isAuthenticated = false
         } catch {
             print("Error signing out: \(error.localizedDescription)")
-        }
-    }
-
-    private func validateCredentialState() {
-        guard let storedUserID = try? keychainService.read(AuthManager.appleUserIdKey) else {
-            isAuthenticated = false
-            return
-        }
-
-        ASAuthorizationAppleIDProvider().getCredentialState(forUserID: storedUserID) { [weak self] state, _ in
-            DispatchQueue.main.async {
-                switch state {
-                case .authorized:
-                    self?.isAuthenticated = true
-                case .revoked, .notFound:
-                    self?.signOut()
-                default:
-                    break
-                }
-            }
         }
     }
 }
